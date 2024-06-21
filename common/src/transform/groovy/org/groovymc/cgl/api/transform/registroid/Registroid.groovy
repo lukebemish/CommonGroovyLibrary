@@ -32,8 +32,7 @@ import java.lang.annotation.*
     boolean includeInnerClasses() default false
 
     /**
-     * If the class holding this Registroid should get automatically classloaded in your mod's main class. <br>
-     * Only works on Forge, or if a custom {@linkplain org.groovymc.cgl.api.transform.util.ModClassTransformer.Helper} is implemented for your mod ID.
+     * If the class holding this Registroid should get automatically classloaded in your mod's main class. Only works on NeoForge.
      */
     boolean registerAutomatically() default true
 

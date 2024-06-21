@@ -18,6 +18,7 @@ import org.groovymc.cgl.api.transform.registroid.RecipeTypeAddon
 import org.groovymc.cgl.api.transform.registroid.RegistrationName
 import org.groovymc.cgl.api.transform.registroid.Registroid
 import org.groovymc.cgl.api.transform.registroid.SoundEventAddon
+import org.groovymc.gml.GMod
 
 @POJO
 @CompileStatic

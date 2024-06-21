@@ -67,6 +67,8 @@ dependencies {
 
     compileOnly sourceSets.transform.output
     compileOnly sourceSets.extension.output
+    testCompileOnly sourceSets.transform.output
+    testCompileOnly sourceSets.extension.output
     transformCompileOnly sourceSets.extension.output
 }
 
@@ -107,7 +109,6 @@ artifacts {
 
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = 'UTF-8'
-    it.options.release = 17
 }
 
 tasks.withType(GroovyCompile).configureEach {

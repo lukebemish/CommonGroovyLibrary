@@ -34,11 +34,9 @@ import java.util.function.Supplier
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 final class RegistroidASTTransformer extends AbstractASTTransformation implements TransformWithPriority {
-    public static final List<ClassNode> REGISTERED_CLASSES = []
-
     public static final ClassNode REGISTRATION_NAME_TYPE = ClassHelper.make(RegistrationName)
     static final String REGISTER_DESC = Type.getMethodDescriptor(Type.getType(RegistryObject), Type.getType(String), Type.getType(Supplier))
-    static final String DR_REGISTER_DESC = Type.getMethodDescriptor(Type.getObjectType('net/minecraftforge/registries/RegistryObject'), Type.getType(String), Type.getType(Supplier))
+    static final String DR_REGISTER_DESC = Type.getMethodDescriptor(Type.getObjectType('net/neoforged/neoforge/registries/DeferredHolder'), Type.getType(String), Type.getType(Supplier))
     public static final ClassNode RESOURCE_KEY_TYPE = ClassHelper.make(ResourceKey)
     public static final Supplier<ClassNode> NEO_HOLDER_TYPE = Suppliers.memoize { ClassHelper.make('net.neoforged.neoforge.registries.DeferredHolder') }
     public static final ClassNode REGISTRATION_PROVIDER_TYPE = ClassHelper.make(RegistrationProvider)
@@ -46,7 +44,6 @@ final class RegistroidASTTransformer extends AbstractASTTransformation implement
     public static final ClassNode ADDON_CLASS_TYPE = ClassHelper.make(RegistroidAddonClass)
     public static final ClassNode REGISTRY_TYPE = ClassHelper.make(Registry)
     public static final Supplier<ClassNode> MODLIST = Suppliers.memoize { ClassHelper.make('net.neoforged.fml.ModList') }
-    public static final Supplier<ClassNode> FORGEBUS_GETTER = Suppliers.memoize { ClassHelper.make('org.groovymc.cgl.reg.forge.ForgeBusGetter') }
 
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
@@ -287,14 +284,14 @@ final class RegistroidASTTransformer extends AbstractASTTransformation implement
                 targetClass.addStaticInitializerStatements([GeneralUtils.stmt(
                         GeneralUtils.callX(GeneralUtils.fieldX(targetField), 'register', GeneralUtils.args(
                                 GeneralUtils.callX(
-                                        FORGEBUS_GETTER.get(),
-                                        'getBus',
-                                        GeneralUtils.callX(GeneralUtils.callX(GeneralUtils.callX(MODLIST.get(), 'get'), 'getModContainerById', GeneralUtils.constX(modId)), 'orElseThrow')
+                                    GeneralUtils.callX(GeneralUtils.callX(GeneralUtils.callX(MODLIST.get(), 'get'), 'getModContainerById', GeneralUtils.constX(modId)), 'orElseThrow'),
+                                    'getEventBus'
                                 )
                         ))
                 )], false)
             }
-            if (targetField.owner !in REGISTERED_CLASSES) {
+            if (!targetField.owner.getNodeMetaData('org.groovymc.cgl.registroid.registered', { false })) {
+                targetField.owner.putNodeMetaData('org.groovymc.cgl.registroid.registered', true)
                 ModClassTransformer.registerTransformer(modId) { classNode, annotationNode, source ->
                     targetField.owner.methods.find {
                         it.parameters.size() == 0 && it.name == 'init' && it.isStatic()
@@ -307,7 +304,6 @@ final class RegistroidASTTransformer extends AbstractASTTransformation implement
                             targetField.owner, 'init'
                     )))
                 }
-                REGISTERED_CLASSES.push(targetField.owner)
             }
         }
     }

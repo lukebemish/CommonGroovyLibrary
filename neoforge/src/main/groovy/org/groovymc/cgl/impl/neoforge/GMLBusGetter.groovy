@@ -18,6 +18,7 @@ class GMLBusGetter implements NeoForgeBusGetter {
         if (modContainer instanceof GModContainer) {
             return modContainer.modBus
         }
+        modContainer.eventBus
         null
     }
 }
